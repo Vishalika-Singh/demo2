@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import PropTypes from 'prop-types';
 import { useTranslation } from 'react-i18next';
 import classNames from 'classnames';
+import { Typography } from '@ohif/ui';
 
 import NavBar from '../NavBar';
 import Svg from '../Svg';
@@ -45,21 +46,23 @@ function Header({
             onClick={onClickReturn}
             data-cy="return-to-work-list"
           >
-            {isReturnEnabled && (
+            {/* {isReturnEnabled && (
               <Icon
                 name="chevron-left"
                 className="text-primary-active w-8"
               />
-            )}
+            )} */}
             <div className="ml-4">
-              {WhiteLabeling?.createLogoComponentFn?.(React, props) || <Svg name="logo-ohif" />}
+              <Typography variant="subtitle"
+              className="mr-4">Radpretation.ai</Typography>
+              {/* {WhiteLabeling?.createLogoComponentFn?.(React, props) || <Svg name="logo-ohif" />} */}
             </div>
           </div>
         </div>
         <div className="flex items-center">{children}</div>
         <div className="flex items-center">
-          <span className="text-common-light mr-3 text-lg">{t('INVESTIGATIONAL USE ONLY')}</span>
-          <Dropdown
+          {/* <span className="text-common-light mr-3 text-lg">{t('INVESTIGATIONAL USE ONLY')}</span> */}
+          {/* <Dropdown
             id="options"
             showDropdownIcon={false}
             list={menuOptions}
@@ -83,7 +86,7 @@ function Header({
             >
               <Icon name="chevron-down" />
             </IconButton>
-          </Dropdown>
+          </Dropdown> */}
         </div>
       </div>
     </NavBar>
