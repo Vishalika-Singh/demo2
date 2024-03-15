@@ -1,6 +1,6 @@
 import { DicomMetadataStore, IWebApiDataSource } from '@ohif/core';
 import OHIF from '@ohif/core';
-
+import { getScanTest } from '../../../../custom/utils/utils';
 import getImageId from '../DicomWebDataSource/utils/getImageId';
 import getDirectURL from '../utils/getDirectURL';
 
@@ -60,14 +60,32 @@ const findStudies = (key, value) => {
 
 function createDicomJSONApi(dicomJsonConfig) {
   const { wadoRoot } = dicomJsonConfig;
+  let JsonURL = ''
+  const getJsonUrl = async (query) => {
+
+    try {
+      let responseData = await getScanTest(query.get('id'), query.get('token'))
+      console.log('Scan test data:', responseData);
+      JsonURL = 'http://dev.radpretation.ai/api/dicom/MR2.json';
+
+    }
+    catch (err) {
+      console.log(err)
+    }
+  }
 
   const implementation = {
     initialize: async ({ query, url }) => {
-      if (!url) {
-        url = query.get('url');
-      }
-      let metaData = getMetaDataByURL(url);
 
+      // custom code
+      await getJsonUrl(query);
+      url = JsonURL;
+      console.log(url, 'url');
+      // if (!url) {
+      //   url = query.get('url');
+      // }
+      let metaData = getMetaDataByURL(url);
+      console.log(metaData, 'yashu url');
       // if we have already cached the data from this specific url
       // We are only handling one StudyInstanceUID to run; however,
       // all studies for patientID will be put in the correct tab
@@ -76,7 +94,7 @@ function createDicomJSONApi(dicomJsonConfig) {
           return aStudy.StudyInstanceUID;
         });
       }
-
+      console.log(url, 'url lll');
       const response = await fetch(url);
       const data = await response.json();
 
@@ -112,7 +130,7 @@ function createDicomJSONApi(dicomJsonConfig) {
     },
     query: {
       studies: {
-        mapParams: () => {},
+        mapParams: () => { },
         search: async param => {
           const [key, value] = Object.entries(param)[0];
           const mappedParam = mappings[key];
@@ -270,8 +288,8 @@ function createDicomJSONApi(dicomJsonConfig) {
       return imageIds;
     },
     getStudyInstanceUIDs: ({ params, query }) => {
-      const url = query.get('url');
-      return _store.studyInstanceUIDMap.get(url);
+
+      return _store.studyInstanceUIDMap.get(JsonURL);
     },
   };
   return IWebApiDataSource.create(implementation);
