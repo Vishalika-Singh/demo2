@@ -1,4 +1,4 @@
-import { BASE_URL } from "./config";
+import { BASE_URL } from './config';
 
 export const getScanTest = async (id, token) => {
   try {
@@ -7,11 +7,9 @@ export const getScanTest = async (id, token) => {
         Authorization: `Bearer ${token}`,
       },
     });
-
     if (!response.ok) {
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-
     const responseData = await response.json();
     return responseData;
   } catch (error) {

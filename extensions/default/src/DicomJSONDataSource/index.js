@@ -60,32 +60,28 @@ const findStudies = (key, value) => {
 
 function createDicomJSONApi(dicomJsonConfig) {
   const { wadoRoot } = dicomJsonConfig;
-  let JsonURL = ''
-  const getJsonUrl = async (query) => {
 
+  //custom code
+  let JsonURL = '';
+  const getJsonUrl = async query => {
     try {
-      let responseData = await getScanTest(query.get('id'), query.get('token'))
-      console.log('Scan test data:', responseData);
+      let responseData = await getScanTest(query.get('id'), query.get('token'));
       JsonURL = 'http://dev.radpretation.ai/api/dicom/R3.json';
-
+    } catch (err) {
+      console.log(err);
     }
-    catch (err) {
-      console.log(err)
-    }
-  }
+  };
 
   const implementation = {
     initialize: async ({ query, url }) => {
-
-      // custom code
+      //custom code
       await getJsonUrl(query);
       url = JsonURL;
-      console.log(url, 'url');
       // if (!url) {
       //   url = query.get('url');
       // }
+
       let metaData = getMetaDataByURL(url);
-      console.log(metaData, 'yashu url');
       // if we have already cached the data from this specific url
       // We are only handling one StudyInstanceUID to run; however,
       // all studies for patientID will be put in the correct tab
@@ -94,7 +90,7 @@ function createDicomJSONApi(dicomJsonConfig) {
           return aStudy.StudyInstanceUID;
         });
       }
-      console.log(url, 'url lll');
+
       const response = await fetch(url);
       const data = await response.json();
 
@@ -288,7 +284,7 @@ function createDicomJSONApi(dicomJsonConfig) {
       return imageIds;
     },
     getStudyInstanceUIDs: ({ params, query }) => {
-
+      //custom code
       return _store.studyInstanceUIDMap.get(JsonURL);
     },
   };

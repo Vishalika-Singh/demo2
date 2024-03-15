@@ -1,1 +1,1 @@
-export const BASE_URL = "http://dev.radpretation.ai/api";
+export const BASE_URL = 'http://dev.radpretation.ai/api';
