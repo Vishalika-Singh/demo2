@@ -66,7 +66,7 @@ function createDicomJSONApi(dicomJsonConfig) {
     try {
       let responseData = await getScanTest(query.get('id'), query.get('token'))
       console.log('Scan test data:', responseData);
-      JsonURL = 'http://dev.radpretation.ai/api/dicom/MR2.json';
+      JsonURL = 'http://dev.radpretation.ai/api/dicom/R3.json';
 
     }
     catch (err) {
