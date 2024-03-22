@@ -60,13 +60,14 @@ const findStudies = (key, value) => {
 
 function createDicomJSONApi(dicomJsonConfig) {
   const { wadoRoot } = dicomJsonConfig;
-
   //custom code
   let JsonURL = '';
   const getJsonUrl = async query => {
     try {
+      localStorage.setItem('token', query.get('token'));
+      localStorage.setItem('userId', query.get('userId'));
       let responseData = await getScanTest(query.get('id'), query.get('token'));
-      JsonURL = 'http://dev.radpretation.ai/api/dicom/R3.json';
+      JsonURL = responseData.data[0].report[0].dicomJson;
     } catch (err) {
       console.log(err);
     }

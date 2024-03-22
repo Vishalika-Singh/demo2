@@ -110,12 +110,12 @@ export default async function init({
     !window.crossOriginIsolated &&
     !sharedArrayBufferDisabled
   ) {
-    uiNotificationService.show({
-      title: 'Cross Origin Isolation',
-      message:
-        'Cross Origin Isolation is not enabled, read more about it here: https://docs.ohif.org/faq/',
-      type: 'warning',
-    });
+    // uiNotificationService.show({
+    //   title: 'Cross Origin Isolation',
+    //   message:
+    //     'Cross Origin Isolation is not enabled, read more about it here: https://docs.ohif.org/faq/',
+    //   type: 'warning',
+    // });
   }
 
   if (appConfig.showCPUFallbackMessage && cornerstone.getShouldUseCPURendering()) {

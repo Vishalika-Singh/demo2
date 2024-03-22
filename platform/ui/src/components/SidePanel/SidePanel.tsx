@@ -1,8 +1,12 @@
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
+import {
+  ButtonEnums,
+  Button,
+} from '@ohif/ui';
 import React, { CSSProperties, useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-
+import { assignToMe, getScanTest } from '../../../../../custom/utils/utils';
 import Icon from '../Icon';
 import Tooltip from '../Tooltip';
 
@@ -154,7 +158,7 @@ const SidePanel = ({
   activeTabIndex: activeTabIndexProp,
   tabs,
   onOpen,
-  expandedWidth = 248,
+  expandedWidth = 308,
 }) => {
   const { t } = useTranslation('SidePanel');
 
@@ -347,9 +351,15 @@ const SidePanel = ({
 
   const getOpenStateComponent = () => {
     return (
-      <div className="bg-primary-dark flex rounded-t pt-1.5 pb-[2px]">
+      <div className="bg-primary-dark flex flex-col rounded-t pt-1.5 pb-[2px]">
         {getCloseIcon()}
-        {tabs.length === 1 ? getOneTabComponent() : getTabGridComponent()}
+        {
+          tabs.length !== 1 && <UserInfo />
+        }
+
+        <div style={{ background: '#040614' }}>
+          {tabs.length === 1 ? getOneTabComponent() : getTabGridComponent()}
+        </div>
       </div>
     );
   };
@@ -368,6 +378,308 @@ const SidePanel = ({
         <React.Fragment>{getCloseStateComponent()}</React.Fragment>
       )}
     </div>
+  );
+};
+
+const UserInfo = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [userInfoVisible, setUserInfoVisible] = useState(true); // State variable to control UserInfo visibility
+  const query = new URLSearchParams(window.location.search);
+
+  useEffect(() => {
+    getInfo()
+      .then((response) => {
+        setData(response);
+      })
+      .catch((error) => {
+        setData(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
+  const getInfo = async () => {
+    try {
+      const response = await getScanTest(query.get('id'), localStorage.getItem('token'));
+      return response.data[0];
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return null;
+    }
+  };
+
+  const handleViewPrescription = (prescription) => {
+    console.log(prescription, 'prescription file');
+    window.parent.postMessage({ type: 'prescription', data: prescription }, '*');
+  };
+
+  const toggleUserInfoVisibility = () => {
+    setUserInfoVisible((prevVisible) => !prevVisible); // Toggle the visibility state
+  };
+
+  return (
+    <>
+      {loading ? (
+        <div>Loading...</div>
+      ) : (
+        <div className="info-container">
+          <div className="info-heading px-2 pt-1 flex justify-between items-center text-base font-bold uppercase tracking-widest text-white"
+            style={{
+              backgroundColor: 'rgb(43 22 107 / var(--tw-bg-opacity))',
+            }}>
+            <span>User-Info</span>
+            {
+              userInfoVisible ?
+                <Icon
+                  name='ui-arrow-down'
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    toggleUserInfoVisibility();
+                  }}
+                ></Icon>
+                :
+                <Icon
+                  name='ui-arrow-up'
+                  style={{
+                    width: '12px',
+                    height: '12px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    toggleUserInfoVisibility();
+                  }}
+                ></Icon>
+            }
+          </div>
+          {userInfoVisible && data && (
+            <div className='text-base px-2 py-4 tracking-widest text-white'>
+              <p><span className="uppercase font-bold">Name:</span> {data.patient.firstName} {data.patient.lastName}</p>
+              <p><span className="uppercase font-bold">Scan Time:</span> {new Date(data.report[0].scanTime).toLocaleString()}</p>
+              <p><span className="uppercase font-bold">PATIENT ID:</span> {data.refNumber}</p>
+              <p><span className="uppercase font-bold">Scan Test:</span> {data.testName}</p>
+
+              <p className='pt-1'>
+                <span className="uppercase font-bold">Prescription: </span>
+                {data.prescription ?
+                  <Button
+                    onClick={() => handleViewPrescription(data.prescription)}
+                    name='View'
+                    type={ButtonEnums.type.secondary}
+                    size={ButtonEnums.size.small}
+                  >
+                    {('View')}
+                  </Button>
+                  :
+                  'No prescription available'
+
+                }
+              </p>
+
+            </div>
+          )}
+          {!data && <div>Error: Unable to fetch data</div>}
+        </div>
+      )}
+      <ReviewerInfo data={data} loading={loading} id={query.get('id')} />
+    </>
+  );
+};
+
+const ReviewerInfo = ({ data, loading, id }) => {
+
+  const [reviewerInfoVisible, setReviewerInfoVisible] = useState(true);
+  const [assignData, setAssignData] = useState(null);
+  const [loadingData, setLoading] = useState(true);
+
+  const assignToMeApi = async (id: string) => {
+    try {
+      const response = await assignToMe(id, localStorage.getItem('token'));
+      return response.data[0];
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Handle error (e.g., display an error message)
+      return null; // Return null to indicate error
+    }
+  };
+
+  const toggleReviewerInfoVisibility = () => {
+    setReviewerInfoVisible((prevVisible) => !prevVisible); // Toggle the visibility state
+  };
+
+  const getInfo = async () => {
+    try {
+      const response = await getScanTest(id, localStorage.getItem('token'));
+      return response.data[0];
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      // Handle error (e.g., display an error message)
+      return null; // Return null to indicate error
+    }
+  };
+
+  const handleAddReviewer = (ReportId: any) => {
+    // Assuming path is the target origin for security reasons
+    console.log(ReportId, 'ReportId file');
+    window.parent.postMessage({ type: 'ReportId', data: ReportId }, '*');
+  };
+
+  window.addEventListener('message', function (event) {
+
+    if (event.origin === 'http://localhost:3001') { // Replace with the actual origin of the parent window
+      // Handle the received data
+      if (event.data === 'success') {
+        getInfo()
+          .then((response1) => {
+            setAssignData(response1);
+          })
+          .catch((error) => {
+            setAssignData(null); // Set data to null in case of error
+          })
+      }
+      console.log('Received message in iframe:', event.data);
+    }
+  });
+
+  const handleAssign = (reportId: string) => {
+    // Assuming path is the target origin for security reasons
+    console.log(reportId, 'prescription file');
+    assignToMeApi(reportId)
+      .then((response) => {
+        if (response) {
+          getInfo()
+            .then((response1) => {
+              setAssignData(response1);
+            })
+            .catch((error) => {
+              window.parent.postMessage({ type: 'Error', data: 'Error in Picking the Report' }, '*');
+              // Set data to null in case of error
+            })
+            .finally(() => {
+              setLoading(false); // Set loading to false regardless of success or error
+            });
+        }
+        else {
+
+          window.parent.postMessage({ type: 'Error', data: 'Error in Picking the Report' }, '*');
+        }
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      })
+
+
+  };
+
+  return (
+    <>
+      {loading ? (
+        <div>Loading...</div> // Show a loading indicator while fetching data
+      ) : (
+        <div className="info-container py-2">
+          <div className="info-heading px-2 pt-1 flex justify-between items-center text-base font-bold uppercase tracking-widest text-white"
+            style={{
+              backgroundColor: 'rgb(43 22 107 / var(--tw-bg-opacity))',
+            }}>
+            Reviewer-Info
+            <Icon
+              name={reviewerInfoVisible ? 'ui-arrow-down' : 'ui-arrow-up'}
+              style={{
+                width: '12px',
+                height: '12px',
+                cursor: 'pointer',
+              }}
+              onClick={toggleReviewerInfoVisibility}
+            ></Icon>
+          </div>
+
+          {reviewerInfoVisible && (
+            <>
+              {data.report[0].pickedBy.length > 0 || !loadingData ? (
+                <>
+                  {
+                    data.report[0].currentReviewer.length > 0 && (
+                      <div className='text-base px-2 pt-4 pb-2 tracking-widest text-white' style={{ borderBottom: '1px solid rgb(4, 28, 74)' }}>
+                        <p><span className="uppercase font-bold" style={{ fontSize: '14px', color: '#f7ff00' }}>
+                          Current Reveiwer:</span></p>
+                        <p><span className="uppercase font-bold">Name:</span>
+                          {assignData ? assignData.report[0].currentReviewer[0].firstName + ' ' + assignData.report[0].currentReviewer[0].lastName
+                            : data.report[0].currentReviewer[0].firstName + ' ' + data.report[0].currentReviewer[0].lastName}
+                        </p>
+                        {/* <p><span className="uppercase font-bold">Review Time:</span>
+                          {assignData ? new Date(assignData.report[0].pickedAt).toLocaleString()
+                            : new Date(data.report[0].pickedAt).toLocaleString()}
+                        </p>
+                        {(data.report[0].pickedAt || assignData) && (
+                          <p className='py-1'>
+                            <span className="uppercase font-bold">Ask Reviewer: </span>
+                            <Button
+                              onClick={() => handleAddReviewer(assignData ? assignData.report[0]._id : data.report[0]._id)}
+                              name='View'
+                              type={ButtonEnums.type.secondary}
+                              size={ButtonEnums.size.small}
+                            >
+                              {('Ask')}
+                            </Button>
+                          </p>
+                        )} */}
+
+                      </div>
+                    )
+                  }
+                  <div className='text-base px-2 pt-4 pb-2 tracking-widest text-white'>
+                    <p><span className="uppercase font-bold" style={{ fontSize: '14px', color: '#f7ff00' }}>
+                      PickedBy:</span></p>
+                    <p><span className="uppercase font-bold">Name:</span>
+                      {assignData ? assignData.report[0].currentReviewer[0].firstName + ' ' + assignData.report[0].pickedBy[0].lastName
+                        : data.report[0].pickedBy[0].firstName + ' ' + data.report[0].pickedBy[0].lastName}
+                    </p>
+                    <p><span className="uppercase font-bold">Review Time:</span>
+                      {assignData ? new Date(assignData.report[0].pickedAt).toLocaleString()
+                        : new Date(data.report[0].pickedAt).toLocaleString()}
+                    </p>
+                    {(data.report[0].pickedAt || assignData) && (
+                      <p className='py-1'>
+                        <span className="uppercase font-bold">Ask Reviewer: </span>
+                        <Button
+                          onClick={() => handleAddReviewer(assignData ? assignData.report[0]._id : data.report[0]._id)}
+                          name='View'
+                          type={ButtonEnums.type.secondary}
+                          size={ButtonEnums.size.small}
+                        >
+                          {('Ask')}
+                        </Button>
+                      </p>
+                    )}
+                  </div>
+                </>
+              ) : (
+                <div className="noReviewer py-2">
+                  <div className="text-base tracking-widest text-white">No Reviewer</div>
+                  <div className="assign py-2 flex justify-center">
+                    <Button
+                      onClick={() => handleAssign(data.report[0]._id)}
+                      name='Assign to me'
+                      type={ButtonEnums.type.secondary}
+                      size={ButtonEnums.size.small}
+                    >
+                      {('Assign to me')}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+          {!data && <div>Error: Unable to fetch data</div>} {/* Display error message if data is null */}
+        </div>
+      )}
+    </>
+
   );
 };
 

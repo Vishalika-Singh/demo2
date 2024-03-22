@@ -46,7 +46,7 @@ class ImageOverlayViewerTool extends AnnotationDisplayTool {
     super(toolProps, defaultToolProps);
   }
 
-  onSetToolDisabled = (): void => {};
+  onSetToolDisabled = (): void => { };
 
   protected getReferencedImageId(viewport: IStackViewport | IVolumeViewport): string {
     if (viewport instanceof VolumeViewport) {

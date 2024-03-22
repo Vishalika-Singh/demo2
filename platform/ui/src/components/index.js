@@ -62,6 +62,7 @@ import ViewportGrid from './ViewportGrid';
 import ViewportPane from './ViewportPane';
 import WindowLevelMenuItem from './WindowLevelMenuItem';
 import UserPreferences from './UserPreferences';
+
 import HotkeysPreferences from './HotkeysPreferences';
 import HotkeyField from './HotkeyField';
 import Header from './Header';

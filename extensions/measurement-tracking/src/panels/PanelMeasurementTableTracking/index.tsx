@@ -7,6 +7,8 @@ import {
   Input,
   useViewportGrid,
   ButtonEnums,
+  Button,
+  Icon,
 } from '@ohif/ui';
 import { DicomMetadataStore, utils } from '@ohif/core';
 import { useDebounce } from '@hooks';
@@ -229,6 +231,7 @@ function PanelMeasurementTableTracking({ servicesManager, extensionManager }) {
             description={displayStudySummary.description}
           />
         )}
+
         <MeasurementTable
           title="Measurements"
           data={displayMeasurementsWithoutFindings}
@@ -246,6 +249,7 @@ function PanelMeasurementTableTracking({ servicesManager, extensionManager }) {
           />
         )}
       </div>
+
       {!appConfig?.disableEditing && (
         <div className="flex justify-center p-4">
           <ActionButtons
@@ -262,6 +266,7 @@ function PanelMeasurementTableTracking({ servicesManager, extensionManager }) {
           />
         </div>
       )}
+
     </>
   );
 }
@@ -276,6 +281,9 @@ PanelMeasurementTableTracking.propTypes = {
     }).isRequired,
   }).isRequired,
 };
+
+
+
 
 // TODO: This could be a measurementService mapper
 function _mapMeasurementToDisplay(measurement, types, displaySetService) {
